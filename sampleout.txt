@@ -1,0 +1,101 @@
+Sample Output from Stan Small COS470 RTP Assignment
+
+
+(setq Maxioms '(
+	(human Maximus)
+	(Pompeian Maximus)
+	(born Maximus 40)
+	(erupted volcano 79)
+	(or (not (human ?x1)) 
+		(mortal ?x1))
+	(or (not (Pompeian ?x2))
+		(died ?x2 79))
+	(or (not (mortal ?x3))
+		(not (born ?x3 ?t1))
+		(not (gt (- ?t2 ?t1) 150))
+		(dead ?x3 ?t2))
+	(or (not (alive ?x4 ?t3))
+		(not (dead ?x4 ?t3)))
+	(or (dead ?x5 ?t4)
+		(alive ?x5 ?t4))
+	(or (not (died ?x6 ?t5))
+		(not (gt ?t6 ?t5))
+		(dead ?x6 ?t6))))
+
+(defvar now 2017)
+(defun gt (x y)
+	(> x y))
+
+Theorem: Maximus is mortal.
+
+[1]> (rtp '(not (mortal Maximus)) nil Maxioms)
+Theorem: (NOT (MORTAL MAXIMUS))
+Resolved with: (OR (NOT (HUMAN MAXIMUS)) (MORTAL MAXIMUS))
+Theorem: (NOT (HUMAN MAXIMUS))
+Resolved with: (HUMAN MAXIMUS)
+((|?X1| MAXIMUS)) 
+SUCCESS
+
+Theorem: Maximus is dead now.
+
+[2]> (rtp '(not (dead Maximus now)) nil Maxioms)
+Theorem: (NOT (DEAD MAXIMUS NOW))
+Resolved with: (OR (NOT (MORTAL MAXIMUS)) (NOT (BORN MAXIMUS |?T1|)) (NOT (GT (- NOW |?T1|) 150)) (DEAD MAXIMUS NOW))
+Theorem: (OR (NOT (MORTAL MAXIMUS)) (NOT (BORN MAXIMUS |?T1|)) (NOT (GT (- NOW |?T1|) 150)))
+Resolved with: (BORN MAXIMUS 40)
+Resolved with: (OR (NOT (HUMAN MAXIMUS)) (MORTAL MAXIMUS))
+Theorem: (OR (NOT (HUMAN MAXIMUS)) NIL)
+Resolved with: (HUMAN MAXIMUS)
+((|?X1| MAXIMUS) (|?T1| 40) (|?T2| NOW) (|?X3| MAXIMUS)) 
+SUCCESS
+
+Theorem: The volcano did not erupt in 79. 
+
+[3]> (rtp '(erupted volcano 79) nil Maxioms)
+Theorem: (ERUPTED VOLCANO 79)
+FAILURE
+
+(setq Jaxioms '(
+	(cat Puss) 
+	(dog Fido)
+	(owns Jack Fido)
+	(or (not (cat ?u)) 
+		(animal ?u))
+	(or (not (dog ?y)) 
+		(not (owns ?x ?y)) 
+		(animallover ?x))
+	(or (not (animallover ?z)) 
+		(not (animal ?w)) 
+		(not (kills ?z ?w))))) 
+
+Theorem: Jack does not kill Puss. 
+
+[4]> (rtp '(kills Jack Puss) nil Jaxioms)
+Theorem: (KILLS JACK PUSS)
+Resolved with: (OR (NOT (ANIMALLOVER JACK)) (NOT (ANIMAL PUSS)) (NOT (KILLS JACK PUSS)))
+Theorem: (OR (NOT (ANIMALLOVER JACK)) (NOT (ANIMAL PUSS)))
+Resolved with: (OR (NOT (CAT PUSS)) (ANIMAL PUSS))
+Resolved with: (OR (NOT (DOG |?Y|)) (NOT (OWNS JACK |?Y|)) (ANIMALLOVER JACK))
+Theorem: (OR (NOT (DOG |?Y|)) (NOT (OWNS JACK |?Y|)) (NOT (CAT PUSS)))
+Resolved with: (CAT PUSS)
+Resolved with: (DOG FIDO)
+Resolved with: (OWNS JACK FIDO)
+((|?Y| FIDO) (|?X| JACK) (|?U| PUSS) (|?W| PUSS) (|?Z| JACK)) 
+SUCCESS
+
+Theorem: Puss is an animal. 
+
+[5]> (rtp '(not (animal Puss)) nil Jaxioms)
+Theorem: (NOT (ANIMAL PUSS))
+Resolved with: (OR (NOT (CAT PUSS)) (ANIMAL PUSS))
+Theorem: (NOT (CAT PUSS))
+Resolved with: (CAT PUSS)
+((|?U| PUSS)) 
+SUCCESS
+
+Theorem: Jack kills Puss. 
+
+[6]> (rtp '(not (kills Jack Puss)) nil Jaxioms)
+Theorem: (NOT (KILLS JACK PUSS))
+FAILURE
+
